@@ -25,6 +25,13 @@ jobs:
       - name: Run Postman Collection
         run: newman run Books.postman_collection.json -e Api_books.postman_environment.json -r htmlextra,cli
 
+      - name: Upload HTMLEXtra Report
+        if: always()  # Ensures report is uploaded even if tests fail
+        uses: actions/upload-artifact@v4
+        with:
+          name: postman-htmlextra-report
+          path: newman-report.html
+
 
 
       
