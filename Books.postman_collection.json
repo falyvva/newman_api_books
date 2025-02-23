@@ -1,0 +1,615 @@
+{
+	"info": {
+		"_postman_id": "714a4334-e492-4b6c-b87b-f6b6685bcce2",
+		"name": "Books",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "41254366"
+	},
+	"item": [
+		{
+			"name": "Register API client",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let res_data = pm.response.json();",
+							"let my_token =res_data.accessToken",
+							"//pm.collectionVariables.set(\"token\", pm.response.json().accessToken )",
+							"//pm.collectionVariables.set('token', my_token);",
+							"pm.environment.set('token',my_token);",
+							"//let token = pm.collectionVariables.get('token');",
+							"let token = pm.environment.get('token');",
+							"let baseURL = pm.environment.get('baseURL');",
+							"let requestData = pm.request.body.toJSON();",
+							"console.log(\"Token:\", token);",
+							"console.log(\"BaseURL:\",baseURL)",
+							"console.log(\"Request data:\", requestData)",
+							"",
+							"pm.test(\"Access token should exist in the response\", function () {",
+							"    pm.expect(res_data.accessToken).to.exist;",
+							"});",
+							"",
+							"pm.test(\"Access token should be a string\", function () {",
+							"    pm.expect(res_data.accessToken).to.be.a('string');",
+							"});",
+							"",
+							"pm.test(\"Token should be set in environment variables\", function () {",
+							"    pm.expect(token).to.exist;",
+							"});",
+							"",
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n   \"clientName\": \"{{$randomUserName}}\",\r\n   \"clientEmail\": \"{{$randomEmail}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api-clients/",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api-clients",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Check Status",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let res_data = pm.response.json();\r",
+							"console.log(res_data); \r",
+							"pm.test(\"Status should exist in the response\", function () {\r",
+							"    pm.expect(res_data).to.be.an('object');\r",
+							"    pm.expect(res_data.status).to.exist;\r",
+							"});\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}/status",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List of books",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let response_data = pm.response.json();",
+							"",
+							"pm.test(\"Response should be an array\", function () {",
+							"     pm.expect(response_data).to.be.an('array');",
+							"});",
+							"",
+							"pm.test(\"Response data should be exist in the array\", function(){",
+							"    pm.expect(response_data).to.exist;",
+							"});",
+							"",
+							"let bookIds = response_data.map(book => book.id).filter(id => id);",
+							"console.log('Book IDs: ', bookIds)",
+							"",
+							"pm.test(\"IDs should be an array\", function () {",
+							"     pm.expect(bookIds).to.be.an('array');",
+							"});",
+							"",
+							"pm.test(\"IDs should be exist in the array\", function(){",
+							"    pm.expect(bookIds).to.exist;",
+							"});",
+							"let randomIndex = Math.floor(Math.random() * bookIds.length);",
+							"let randomBookId = bookIds[randomIndex];",
+							"pm.environment.set('bookIds',bookIds);",
+							"pm.environment.set('randomBookId',randomBookId);",
+							"",
+							"pm.test(\"bookIds and randomBookId should be set in environment variables\", function () {",
+							"    pm.expect(bookIds).to.exist;",
+							"    pm.expect(randomBookId).to.exist;",
+							"});",
+							"",
+							"console.log('Random Book Id:', randomBookId);",
+							"",
+							"pm.test(\"Status code is 200\",function(){",
+							"    pm.expect(pm.response.to.have.status(200))",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}books",
+					"host": [
+						"{{baseURL}}books"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get a single book",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Retrieve the bookIds array from the environment\r",
+							"let bookIds = pm.environment.get(\"bookIds\");\r",
+							"console.log('Book IDs', bookIds)\r",
+							"\r",
+							"// Check if bookIds is valid and is an array\r",
+							"pm.test(\"Book IDs should be an array and not empty\", function () {\r",
+							"    pm.expect(bookIds).to.be.an(\"array\");\r",
+							"    pm.expect(bookIds).to.exist;\r",
+							"});\r",
+							"\r",
+							"    let randomIndex = Math.floor(Math.random() * bookIds.length);\r",
+							"    let randomBookId = bookIds[randomIndex];\r",
+							"\r",
+							"    // Set the random book ID as an environment variable for use in the request URL\r",
+							"    pm.environment.set(\"randomBookid\", randomBookId);\r",
+							"pm.test(\"Random book IDs should be a number and should exist\", function () {\r",
+							"    pm.expect(randomBookId).to.exist;\r",
+							"    pm.expect(randomBookId).to.be.a(\"number\");\r",
+							"});\r",
+							"    // Log the random Book ID for debugging purposes\r",
+							"    console.log(\"Random Book ID:\", randomBookId);\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\",function(){\r",
+							"    pm.expect(pm.response.to.have.status(200))\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}books/{{randomBookId}}",
+					"host": [
+						"{{baseURL}}books"
+					],
+					"path": [
+						"{{randomBookId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Submit an order",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseData = pm.response.json();\r",
+							"console.log(responseData)\r",
+							"let orderIDs = responseData.orderId\r",
+							"pm.test('Order IDs should exist and be non-empty strings', function () {\r",
+							"     pm.expect(orderIDs).to.be.an('string');\r",
+							"     pm.expect(orderIDs).to.exist;\r",
+							"});\r",
+							"pm.environment.set('orderIDs',orderIDs);\r",
+							"\r",
+							"pm.test('Response status code is 201', function(){\r",
+							"    pm.response.to.have.status(201);\r",
+							"})\r",
+							"let status = pm.response.code;\r",
+							"console.log('Response status:', status) ;\r",
+							"\r",
+							"pm.test(\"Response time is less than 1500ms\", function () {\r",
+							"  pm.expect(pm.response.responseTime).to.be.below(1500);\r",
+							"});\r",
+							"let res_time = pm.response.responseTime;\r",
+							"console.log(\"Response Time:\", res_time);\r",
+							"\r",
+							"pm.test(\"Response body has the required fields - created and orderId\", function () {\r",
+							"  pm.expect(responseData).to.be.an('object');\r",
+							"  pm.expect(responseData.created).to.exist;\r",
+							"  pm.expect(responseData.orderId).to.exist;\r",
+							"});\r",
+							"let created = pm.response.json().created;\r",
+							"let orderId = pm.response.json().orderId;\r",
+							"\r",
+							"console.log(\"Created:\", created);\r",
+							"console.log(\"Order ID:\", orderId);\r",
+							"\r",
+							"pm.test(\"Created field is a boolean value\", function () {\r",
+							"    pm.expect(responseData).to.be.an('object');\r",
+							"    pm.expect(responseData.created).to.be.a('boolean');\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Order ID is a non-empty string\", function () { \r",
+							"    let order_id_data = responseData.orderId;\r",
+							"    pm.expect(responseData).to.be.an('object');\r",
+							"    pm.expect(order_id_data).to.be.a('string');\r",
+							"    pm.expect(order_id_data).to.exist;\r",
+							"});\r",
+							"\r",
+							"pm.environment.set(\"randomBookId\", Math.floor(Math.random() * 6) + 1);\r",
+							"pm.test(\"Random book ID is a number and set in the environment\", function () {\r",
+							"    pm.expect(pm.environment.get(\"randomBookId\")).to.exist;\r",
+							"    pm.expect(pm.environment.get(\"randomBookId\")).to.be.a(\"number\")\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"bookId\": {{randomBookId}},\r\n  \"customerName\": \"{{$randomUserName}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}orders",
+					"host": [
+						"{{baseURL}}orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all orders",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let res_data = pm.response.json()",
+							"console.log(res_data)",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 1200ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(1200);",
+							"});",
+							"",
+							"pm.test(\"Response body is an array\", function () {",
+							"    pm.expect(res_data).to.be.an('array');",
+							"});",
+							"",
+							"pm.test(\"Each order has an 'id' field\", function () {",
+							"    res_data.forEach((order) => {",
+							"        pm.expect(order.id).to.exist;",
+							"    });",
+							"});",
+							"pm.test(\"Each order has an 'bookId' field\", function () {",
+							"    res_data.forEach((order) => {",
+							"        pm.expect(order.bookId).to.exist;",
+							"    });",
+							"});",
+							"pm.test(\"Each order has an 'customerName' field\", function () {",
+							"    res_data.forEach((order) => {",
+							"        pm.expect(order.customerName).to.exist;",
+							"    });",
+							"});",
+							"",
+							"pm.test(\"Each order has an 'createdBy' field\", function () {",
+							"    res_data.forEach((order) => {",
+							"        pm.expect(order.createdBy).to.exist;",
+							"    });",
+							"});",
+							"",
+							"pm.test(\"Each order has an 'quantity' field\", function () {",
+							"    res_data.forEach((order) => {",
+							"        pm.expect(order.quantity).to.exist;",
+							"    });",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}orders",
+					"host": [
+						"{{baseURL}}orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get an order",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let jsonData = pm.response.json()",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Response time is less than 1500ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.lessThan(1500);",
+							"});",
+							"",
+							"pm.test(\"Response body is not empty\", function () {",
+							"    pm.expect(jsonData).to.exist;",
+							"});",
+							"",
+							"pm.test(\"Response body contains order ID\", function () {",
+							"    pm.expect(jsonData).to.have.property(\"id\"); ",
+							"    pm.expect(jsonData.id).to.be.a(\"string\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}orders/{{orderIDs}}",
+					"host": [
+						"{{baseURL}}orders"
+					],
+					"path": [
+						"{{orderIDs}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update an order",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let request_body = JSON.parse(pm.request.body.raw); ",
+							"console.log(\"Request Body:\", request_body);",
+							"",
+							"let customer_name = request_body.customerName;",
+							"console.log(\"Customer Name:\", customer_name);",
+							"",
+							"pm.test(\"Customer Name should exist\", function () {",
+							"    pm.expect(customer_name).to.exist;",
+							"    pm.expect(customer_name).to.be.a(\"string\");",
+							"});",
+							"",
+							"pm.test(\"Status code is 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 1500ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.lessThan(1500);",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"customerName\": \"{{$randomUserName}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}orders/{{orderIDs}}",
+					"host": [
+						"{{baseURL}}orders"
+					],
+					"path": [
+						"{{orderIDs}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete an order",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});",
+							"let res_data = pm.request.toJSON()",
+							"console.log(res_data)",
+							"",
+							"pm.test(\"Response body is empty\", function () {",
+							"    pm.expect(pm.response.text()).to.be.empty;",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}orders/{{orderIDs}}",
+					"host": [
+						"{{baseURL}}orders"
+					],
+					"path": [
+						"{{orderIDs}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
